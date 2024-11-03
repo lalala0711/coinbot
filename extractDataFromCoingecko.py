@@ -4,14 +4,19 @@ import pandas as pd
 import requests
 import os
 import json
+from config import load_environment_variables
 
-client = MongoClient("mongodb+srv://hwko0023:MikaelLevi0095@coingecko.fdzor.mongodb.net/")
+cfg = load_environment_variables()
+mongodbpass = cfg['MONGODB_PASSWORD']
+apikey = cfg['COINGECKO_API_KEY']
+
+client = MongoClient(f"mongodb+srv://hwko0023:{mongodbpass}@coingecko.fdzor.mongodb.net/")
 db = client['coingecko']
 collection = db['coins']
 
 workDir = os.getcwd()
-with open(os.path.join(workDir, "creds.json"), 'r') as file:
-    jsonCreds = json.load(file)
+# with open(os.path.join(workDir, "creds.json"), 'r') as file:
+#     jsonCreds = json.load(file)
 
 df = pd.read_csv("coinLimits.csv")
 
@@ -21,7 +26,7 @@ def insertCoinToMongo(coinid):
         url,
         headers={
             "accept": "application/json",
-            "x-cg-demo-api-key": jsonCreds['API Key']
+            "x-cg-demo-api-key": apikey
         }
     )
     data = r.json()
