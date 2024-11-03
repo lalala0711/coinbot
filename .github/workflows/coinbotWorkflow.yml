@@ -9,6 +9,12 @@ jobs:
   run-scripts:
     runs-on: ubuntu-latest  # You can specify other OS types if needed
 
+    env:
+      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+      COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
