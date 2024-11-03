@@ -5,6 +5,7 @@ import json
 import smtplib
 from email.mime.text import MIMEText
 from config import load_environment_variables
+import numpy as np
 
 cfg = load_environment_variables()
 mongodbpass = cfg['MONGODB_PASSWORD']
