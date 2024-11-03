@@ -17,10 +17,7 @@ db = client['coingecko']
 collection = db['coins']
 
 workDir = os.getcwd()
-# with open(os.path.join(workDir, "creds.json"), 'r') as file:
-#     jsonCreds = json.load(file)
 
-# Fetch all coins
 df = pd.json_normalize(list(collection.find()), sep="_")
 df = pd.json_normalize(list(collection.find()), sep="_")
 df = df[['dateInserted', 'last_updated', 'id', 'symbol', 'name', 'market_data_current_price_php']]
@@ -30,13 +27,13 @@ df['realDate'] = np.where(
     df['last_updated'].isna(), 
     df['dateInserted'], 
     df['last_updated'])
-# df['realDate'] = df['realDate'].dt.date
+
 df.sort_values('realDate', ascending=False, inplace=True)
 df = df[~df['id'].isna()]
 df = df.drop_duplicates(subset=['id'])
-
-# Load target prices from CSV
 dfgoals = pd.read_csv('coinLimits.csv')
+
+dfNew = df.merge(dfgoals, how='left', left_on='id', right_on='Coins ID')
 
 def send_email(subject, message_text, recipient_email):
     email_user = 'hwko0023@gmail.com'
@@ -61,21 +58,17 @@ def send_email(subject, message_text, recipient_email):
 
 # Build the message body
 message_body = "<h1>Coin Price Alerts</h1>"
-message_body += "<table border='1'><tr><th>Coin</th><th>Target Price</th><th>Current Price</th></tr>"
+message_body += "<table border='1'><tr><th>Coin</th><th>Target Price</th><th>Current Price</th><th>Difference</th></tr>"
 
-for index, row in df.iterrows():
+for index, row in dfNew.iterrows():
     coin_id = row['id']
     current_price = row['market_data_current_price_php']
-    
-    # Get the target price from dfgoals
-    target_price_row = dfgoals[dfgoals['Coins ID'] == coin_id]
-    
-    if not target_price_row.empty:
-        target_price = target_price_row['My Target Price'].values[0]
+    target_price = row['My Target Price']
+    difference = target_price - current_price
+    difference = round(difference, 2)
 
-        # Check if the current price meets or exceeds the target price
-        # if current_price >= target_price:
-        message_body += f"<tr><td>{coin_id}</td><td>{target_price}</td><td>{current_price}</td></tr>"
+    # if current_price >= target_price:
+    message_body += f"<tr><td>{coin_id}</td><td>{target_price}</td><td>{current_price}</td><td>{difference}</td></tr>"
 
 message_body += "</table>"
 
